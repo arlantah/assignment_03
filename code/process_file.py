@@ -21,34 +21,43 @@ Test it: pytest tests/test_streamlit.py -k process_file
 # `one_package.py` is your worked example for anything structural, and README
 # Reference #4 and #5 cover the two things that are new here.
 
-# TODO: imports — streamlit, json, and what you need from packaging_parser.
+import json
+import os
+
+import streamlit as st
+from packaging_parser import calc_total_units, get_unit, parse_packaging
 
 
-# TODO: the title, exactly:   Process File of Packages
+st.title("Process File of Packages")
 
 
-# TODO: a file uploader, key="package_file". Like the text box in Part 1 it returns
-#       a value — None until a file has been chosen — so the same kind of guard
-#       goes around everything below.
+uploaded_file = st.file_uploader("Choose a package file:", key="package_file")
 
+if uploaded_file:
+	# 1. Decode the uploaded bytes and split the text into lines.
+	text = uploaded_file.getvalue().decode("utf-8")
+	lines = text.splitlines()
 
-# 1. Bytes to text. The upload is bytes; decode it, then split it into lines.
-# TODO
+	packages = []
 
+	# 2. Parse each non-empty line and show its total.
+	for line in lines:
+		description = line.strip()
+		if not description:
+			continue
 
-# 2. Every line: strip it, SKIP IT IF IT IS BLANK, parse it, keep the parsed package
-#    in a list, and show the line with its total. Match this layout:
-#
-#        12 eggs in 1 carton / 3 cartons in 1 box ➡️ Total 📦 Size: 36 eggs
-# TODO
+		package = parse_packaging(description)
+		packages.append(package)
 
+		total = calc_total_units(package)
+		unit = get_unit(package)
+		st.info(f"{description} ➡️ Total 📦 Size: {total} {unit}")
 
-# 3. Write the list of parsed packages to data/<name>.json with json.dump, where
-#    <name> is the uploaded file's name with .txt replaced by .json.
-# TODO
+	# 3. Write the parsed packages to a JSON file with the same base name.
+	filename = os.path.splitext(os.path.basename(uploaded_file.name))[0] + ".json"
+	output_path = os.path.join("data", filename)
+	with open(output_path, "w", encoding="utf-8") as output_file:
+		json.dump(packages, output_file)
 
-
-# 4. Say what happened, exactly:
-#
-#        3 packages written to data/packaging1.json
-# TODO
+	# 4. Say what happened.
+	st.success(f"{len(packages)} packages written to {output_path}")
