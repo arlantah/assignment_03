@@ -1,6 +1,18 @@
-Write your reflection here.
+One thing I figured out is that Streamlit starts the script over whenever I
+change a widget. `st.text_input` gives me a return value, but it's empty the
+first time, so I need a guard before I try to parse it. An uploaded file is
+bytes, not text, so I have to decode it before splitting it into lines. I also
+need to strip each line and skip the blank ones.
 
-See reflection.md for what makes a good reflection — be specific, use the
-terminology from this assignment (rerun, widget, return value, guard, bytes vs.
-text, decode, session state, initialise once, button-triggered, metric), and make
-it actionable.
+Session state took me a bit to get used to. Regular variables start over on
+each rerun, so counters and summaries need to go in session state and initialise
+once. The uploader still has the same file selected after a rerun, so processing
+needs to be button-triggered or it could count the same file again. The metric
+widgets get their numbers from session state, so they can show the totals from
+all the files I've processed.
+
+I want to practice this by uploading a file without clicking Process, then
+processing it once and rerunning without clicking again. The metrics and summary
+should stay the same on that last rerun. Then I'll process a second file and
+check that the metrics go up, and try a file with blank lines to make sure those
+lines get skipped.
